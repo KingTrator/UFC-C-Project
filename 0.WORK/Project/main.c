@@ -27,11 +27,12 @@ int main(){
                 puts("");
             }
 
-            char a = 10;
-            while(a != 1 || a != 2){
+            short a = 10;
+            while(a < 1 || a > 2){ //Failing
                 printf("O Evento eh UFC (Evento Grande) (1) ou Fight Night (Evento pequeno)? (2)\n");
                 printf("Tipo: ");
-                scanf("%c", &a);
+                scanf("%d", &a);
+                printf("a == %d", a);
             }
 
         } 
