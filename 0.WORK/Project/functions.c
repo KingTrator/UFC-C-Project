@@ -3,9 +3,67 @@
 #include <conio.h>
 #include <stdlib.h>
 #include "functions.h"
+#include <time.h>
 #define RED "\033[1;31m"  
 #define RESET "\033[0m"    
 
+struct Data{
+    int day;
+    int month;
+    int year;
+} data;
+short daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+
+short isValidDate(struct Data* data) {
+    time_t t = time(NULL);
+    struct tm today = *localtime(&t); // Get current date
+
+    // Adjust to match our struct format
+    short currentYear = today.tm_year + 1900;
+    short currentMonth = today.tm_mon + 1;
+    short currentDay = today.tm_mday;
+
+    // Check valid year
+    if (data->year < currentYear || data->year > 2025) {
+        printf("\n Ano INVALIDO (2024 ou 2025)!\n");
+        return 1;
+    }
+
+    // Check valid month
+    if (data->month < 1 || data->month > 12) {
+        printf("\n Mes INVALIDO (1 a 12)\n");
+        return 1;
+    }
+
+    // Check valid day
+    if (data->day < 1 || data->day > daysInMonth[data->month - 1]) {
+        printf("\n dia INVALIDO! (1 a 30/31), fev: 1 a 28\n");
+        return 1;
+    }
+
+    // Additional check: Must be today or later
+    if (data->year == currentYear && (data->month < currentMonth || 
+       (data->month == currentMonth && data->day < currentDay+1))) {
+        printf("\nNao faz sentido cadastrar no passado!\n");
+        printf("Apenas de AMANHA para o futuro\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+short getData(){
+    printf("\n Dia: ");
+    scanf("%d", &data.day);
+    printf("\n Mes: ");
+    scanf("%d", &data.month);
+    printf("\n Ano: ");
+    scanf("%d", &data.year);
+    puts("");
+    return isValidDate(&data);
+
+}
 
 void cool_print(){
     puts("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
@@ -98,3 +156,4 @@ int interactive_menu() {
         }
     }
 }
+
