@@ -11,14 +11,53 @@ struct Date{
     int year;
 };
 
+/*
+    Tive uma ideia de como podemos atender ao critério "procurar data específcia"
+    e "procurar por string exata" sem sofrer:
+    O nome dos eventos pode ser salvo nos arquivos no formato
+    dia/mês/ano-Evento
+    Assim, na hora de buscar o nome do arquivo, se for por string específica
+    basta ler o nome dele até achar "-". E depois ver se o que se segue é a string EXATA.
+    Caso seja por data, basta ler os valores de data até "-" (ou delimitar o buscardo para 10 caracteres)
+*/
+
 int main(){
 
-    
+        FILE *file;
+        printf("Preparando o ambiente");sleep(1);printf(".");sleep(1);printf(".");sleep(1);printf(".\n");
+        file = fopen("EventosUFC", "r");
+        if(file == NULL){
+            file = fopen("EventosUFC", "w");
+            if(file == NULL){
+                printf("Problema na criacao de arquivo!");
+                exit(1);
+            }
+            printf("Arquivo criado.\n");
+            fclose(file);
+        }
+        file = fopen("EventosFightNight", "r");
+        if(file == NULL){
+            file = fopen("EventosFightNight", "w");
+            if(file == NULL){
+                printf("Problema na criacao de arquivo!");
+                exit(1);
+            }
+            printf("Arquivo criado.\n");
+            fclose(file);
+        }
+        sleep(1); system("cls");
+        printf("Ok! Tudo certo!"); sleep(2);
+
+
         short answer = interactive_menu();
         on = answer;
 
 
         if(answer == 1){
+
+
+
+
             cool_print();
             printf("\nVoce escolheu cadastrar um novo evento\n");
             cool_print();
