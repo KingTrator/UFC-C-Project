@@ -183,6 +183,10 @@ int main(){
 
             printf("Main Event: %s\n", mainEvent);
 
+            // DEFINIR LOCAL
+            // Definido o local, criar o arquivo, dentro de EventosUFC na forma:
+            // dia/mês/ano-UFCXXX, ou seja date.data/date.month/date.year concatena com EventUFC
+
             
 
             // Liberação de memória dos lutadores
