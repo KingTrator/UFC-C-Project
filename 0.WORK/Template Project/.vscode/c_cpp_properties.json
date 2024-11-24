@@ -1,0 +1,59 @@
+{
+    "configurations": [
+        {
+            "name": "Win32-MSVC",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.22000.0",
+            "compilerPath": "C:/mingw64/bin/gcc.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "windows-gcc-x86"
+        },
+        {
+            "name": "Win32-GCC",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/mingw64/include",
+                "C:/mingw64/include/c++/13.2.0",
+                "C:/mingw64/include/c++/13.2.0/x86_64-w64-mingw32",
+                "C:/mingw64/include/c++/13.2.0/backward"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/mingw64/bin/gcc.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "gcc-x64"
+        },
+        {
+            "name": "Win32-Clang",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/mingw64/include",
+                "C:/mingw64/include/c++/13.2.0",
+                "C:/mingw64/include/c++/13.2.0/x86_64-w64-mingw32",
+                "C:/mingw64/include/c++/13.2.0/backward"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/mingw64/bin/clang++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
