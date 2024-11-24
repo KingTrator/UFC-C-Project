@@ -14,6 +14,11 @@ struct Date{
     int month;
     int year;
 } date;
+struct Info{
+    int hour;
+    char local[50];
+    char description[100];
+} info;
 
 short isValidDate(struct Date* date) {
     time_t t = time(NULL);
