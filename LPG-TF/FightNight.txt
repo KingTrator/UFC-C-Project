@@ -1,0 +1,2 @@
+11,9,2025,8,Rio de Janeiro,do Bronx estará, 10000.00
+10,10,2025,19,Los Angeles,Mike Tyson estará, 10000.00

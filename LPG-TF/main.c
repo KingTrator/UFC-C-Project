@@ -9,6 +9,13 @@
 // Enum para identificar o tipo de evento
 typedef enum { UFC_EVENT, FIGHT_NIGHT_EVENT } EventType;
 
+// Controle de custos ---- UFC custo mínimo 500k; FightNight 10k
+union Custos {
+    float custosUFC;
+    float custosFGHT;
+
+} eventCosts;
+
 // Estrutura unificada para eventos
 struct genericEvent {
     EventType type;
@@ -18,24 +25,14 @@ struct genericEvent {
     char local[30];
     union {
         struct {
-            char lutador1[11]; // +1 para o caractere nulo
+            char lutador1[11]; 
             char lutador2[11];
         } ufc;
         char descricao[31];
     } details;
+    union Custos eventCosts;
 
 };
-// Controle de custos
-float estimativaGanhos = 0;
-    union{
-        // UFC tem pay-per-view
-        struct{
-            float custoIngressoUFC; 
-            float ppv;
-        }ufcpay;
-
-        float custoIngressoFGHT;
-    } arrecadao;
 
 // Estrutura para armazenar dados da visualização filtrada
 typedef struct {
@@ -216,6 +213,14 @@ void load_events() {
             if (token == NULL) continue;
             strncpy(newEvent.details.ufc.lutador2, token, 10); // Lutador 2
             newEvent.details.ufc.lutador2[10] = '\0';
+
+            token = strtok(NULL, ",");
+            if(token == NULL) continue;
+            char *endptr;
+            float value = strtof(token, &endptr);
+            newEvent.eventCosts.custosUFC = value;
+
+
             // 
             struct genericEvent *newEvents = realloc(allEvents, (numAllEvents + 1) * sizeof(struct genericEvent));
             if (newEvents == NULL) {
@@ -271,6 +276,12 @@ void load_events() {
             if (token == NULL) continue;
             strncpy(newEvent.details.descricao, token, 30);
             newEvent.details.descricao[30] = '\0';
+
+            token = strtok(NULL, ",");
+            if(token == NULL) continue;
+            char *endptr;
+            float value = strtof(token, &endptr);
+            newEvent.eventCosts.custosFGHT = value;
 
             struct genericEvent *newEvents = realloc(allEvents, (numAllEvents + 1) * sizeof(struct genericEvent));
             if (newEvents == NULL) {
@@ -356,16 +367,16 @@ void save_events() {
     for (int i = 0; i < numAllEvents; i++) { // Pega cada tipo estruturado do array dinâmico principal
         struct genericEvent *event = &allEvents[i];
         if (event->type == UFC_EVENT) { 
-            fprintf(outUfcFile, "%d,%d,%d,%d,%s,%s,%s\n",
+            fprintf(outUfcFile, "%d,%d,%d,%d,%s,%s,%s, %.2f\n",
                     event->dt.dia, event->dt.mes, event->dt.ano, event->dt.hora,
                     event->local,
                     event->details.ufc.lutador1,
-                    event->details.ufc.lutador2);
+                    event->details.ufc.lutador2, event->eventCosts.custosUFC);
         } else if (event->type == FIGHT_NIGHT_EVENT) {
-            fprintf(outFnFile, "%d,%d,%d,%d,%s,%s\n",
+            fprintf(outFnFile, "%d,%d,%d,%d,%s,%s, %.2f\n",
                     event->dt.dia, event->dt.mes, event->dt.ano, event->dt.hora,
                     event->local,
-                    event->details.descricao);
+                    event->details.descricao, event->eventCosts.custosFGHT);
         }
     }
 
@@ -408,6 +419,7 @@ void show_events_view() { //Daqui em diante boa parte das funções já foi expl
 
     if (events_view != NULL) {
         gtk_widget_destroy(events_view);
+        events_view = NULL;
     }
 
     events_view = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -514,6 +526,7 @@ void show_error_message(const char *message) {
                                                "%s", message);
     gtk_dialog_run(GTK_DIALOG(dialog));//executa
     gtk_widget_destroy(dialog);//elimina
+    dialog = NULL;
 }
 
 // Função para exibir mensagens informativas
@@ -525,6 +538,7 @@ void show_info_message(const char *message) {
                                                "%s", message);
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
+    dialog = NULL;
 }
 
 // Função para adicionar um novo evento
@@ -537,7 +551,7 @@ void show_add_event_form() {
     GtkWidget *entry_local, *entry_lutador1, *entry_lutador2, *entry_descricao;
     GtkWidget *combo_event_type;
 
-    // Criar uma janela de diálogo modal
+    // Criar uma janela de diálogo modal (sobreposição)
     dialog = gtk_dialog_new_with_buttons("Adicionar Novo Evento", GTK_WINDOW(window),
                                          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                          "_Salvar", GTK_RESPONSE_OK,
@@ -546,7 +560,7 @@ void show_add_event_form() {
 
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-    // Criar um grid para organizar os widgets
+    // Criar um grid para organizar os widgets (organização relativa)
     grid = gtk_grid_new();
     gtk_container_add(GTK_CONTAINER(content_area), grid);
 
@@ -562,11 +576,11 @@ void show_add_event_form() {
 
     // Dia
     label = gtk_label_new("Dia:");
-    gtk_grid_attach(GTK_GRID(grid), label, 0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), label, 0, 1, 1, 1); // gtk_grid_attach os últimos parametros são de posicionamento na matriz == grid
 
     entry_day = gtk_entry_new();
-    gtk_entry_set_max_length(GTK_ENTRY(entry_day), 2);
-    gtk_grid_attach(GTK_GRID(grid), entry_day, 1, 1, 1, 1);
+    gtk_entry_set_max_length(GTK_ENTRY(entry_day), 2); // Cria o textfield do dia, definindo tamanho
+    gtk_grid_attach(GTK_GRID(grid), entry_day, 1, 1, 1, 1); // define posição relativa
 
     // Mês
     label = gtk_label_new("Mês:");
@@ -643,12 +657,14 @@ void show_add_event_form() {
         const gchar *year_text = gtk_entry_get_text(GTK_ENTRY(entry_year));
         const gchar *hour_text = gtk_entry_get_text(GTK_ENTRY(entry_hour));
         const gchar *local_text = gtk_entry_get_text(GTK_ENTRY(entry_local));
+        
 
         // Validar entradas numéricas
         if (!validate_numeric_input(day_text) || !validate_numeric_input(month_text) ||
             !validate_numeric_input(year_text) || !validate_numeric_input(hour_text)) {
             show_error_message("Por favor, insira valores numéricos válidos em dia, mês, ano e hora.");
             gtk_widget_destroy(dialog);
+            dialog = NULL;
             return;
         }
         // Converter as entradas
@@ -684,7 +700,9 @@ void show_add_event_form() {
         time_t event_timestamp = mktime(&event_time);
 
         if (day <= 0 || day > 31 || month <= 0 || month > 12 || year < current_time->tm_year + 1900 ||
-            hour < 0 || hour > 23 || strlen(local_text) == 0 || event_timestamp == -1 || year > 2025) {
+            hour < 0 || hour > 23 || strlen(local_text) == 0 || event_timestamp == -1 || year > 2025
+            || (day > 28 && month == 2) || (day > 30 && (month == 4 || month == 6 || month == 9 || month == 11))
+            ) {
             show_error_message("Por favor, insira valores válidos.");
         } else if (difftime(event_timestamp, t) < 7 * 24 * 3600) {
             show_error_message("O evento deve ser marcado com pelo menos 7 dias de antecedência.");
@@ -710,6 +728,7 @@ void show_add_event_form() {
                     newEvent.details.ufc.lutador1[10] = '\0';
                     strncpy(newEvent.details.ufc.lutador2, lutador2_text, 10);
                     newEvent.details.ufc.lutador2[10] = '\0';
+                    newEvent.eventCosts.custosUFC = 500000;
 
                     struct genericEvent *newEvents = realloc(allEvents, (numAllEvents + 1) * sizeof(struct genericEvent));
                     if (newEvents == NULL) {
@@ -735,6 +754,7 @@ void show_add_event_form() {
                     newEvent.type = FIGHT_NIGHT_EVENT;
                     strncpy(newEvent.details.descricao, descricao_text, 30);
                     newEvent.details.descricao[30] = '\0';
+                    newEvent.eventCosts.custosFGHT = 10000;
 
                     struct genericEvent *newEvents = realloc(allEvents, (numAllEvents + 1) * sizeof(struct genericEvent));
                     if (newEvents == NULL) {
@@ -756,6 +776,7 @@ void show_add_event_form() {
     }
 
     gtk_widget_destroy(dialog);
+    dialog = NULL;
 }
 
 // Callback para mudança do tipo de evento
@@ -831,6 +852,7 @@ void show_events_by_date() {
         if (!validate_numeric_input(month_text) || !validate_numeric_input(year_text)) {
             show_error_message("Por favor, insira valores numéricos válidos em mês e ano.");
             gtk_widget_destroy(dialog);
+            dialog = NULL;
             return;
         }
 
@@ -852,6 +874,7 @@ void show_events_by_date() {
                         show_error_message("Erro de alocação de memória.");
                         free(filteredEvents);
                         gtk_widget_destroy(dialog);
+                        dialog = NULL;
                         return;
                     }
                     filteredEvents = newEvents;
@@ -866,6 +889,7 @@ void show_events_by_date() {
             } else {
                 // Exibir eventos filtrados com paginação
                 gtk_widget_destroy(dialog);
+                dialog = NULL;
                 show_filtered_events_view(filteredEvents, numFilteredEvents);
                 return;
             }
@@ -873,6 +897,7 @@ void show_events_by_date() {
     }
 
     gtk_widget_destroy(dialog);
+    dialog = NULL;
 }
 
 // Função para mostrar eventos por local
@@ -916,6 +941,7 @@ void show_events_by_location() {
                         show_error_message("Erro de alocação de memória.");
                         free(filteredEvents);
                         gtk_widget_destroy(dialog);
+                        dialog = NULL;
                         return;
                     }
                     filteredEvents = newEvents;
@@ -930,6 +956,7 @@ void show_events_by_location() {
             } else {
                 // Exibir eventos filtrados com paginação
                 gtk_widget_destroy(dialog);
+                dialog = NULL;
                 show_filtered_events_view(filteredEvents, numFilteredEvents);
                 return;
             }
@@ -937,6 +964,7 @@ void show_events_by_location() {
     }
 
     gtk_widget_destroy(dialog);
+    dialog = NULL;
 }
 
 // Função para mostrar eventos filtrados com paginação
@@ -944,10 +972,12 @@ void show_filtered_events_view(struct genericEvent *events, int numEvents) {
     if (main_menu != NULL) {
         gtk_widget_destroy(main_menu);
         main_menu = NULL;
+        main_menu = NULL;
     }
 
     if (events_view != NULL) {
         gtk_widget_destroy(events_view);
+        events_view = NULL;
     }
 
     // Alocar memória para os dados da visualização filtrada
@@ -979,6 +1009,7 @@ void refresh_filtered_events_view(FilteredEventsData *data) {
     GList *children = gtk_container_get_children(GTK_CONTAINER(data->events_view));
     for (GList *iter = children; iter != NULL; iter = g_list_next(iter)) {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
+        iter->data = NULL;
     }
     g_list_free(children);
 
@@ -1161,4 +1192,5 @@ void show_delete_event() {
 
     free(futureEvents);
     gtk_widget_destroy(dialog);
+    dialog = NULL;
 }
